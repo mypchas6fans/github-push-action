@@ -11,7 +11,7 @@ const get = (url, options = {}) => new Promise((resolve, reject) => https
             const body = Buffer.concat(chunks).toString('utf-8');
             if (res.statusCode < 200 || res.statusCode > 300) {
                 return reject(Object.assign(
-                    new Error(`Invalid status code: ${res.statusCode}`),
+                    new Error(`Invalid status code '${res.statusCode}' for url '${url}'`),
                     { res, body }
                 ));
             }
@@ -41,12 +41,12 @@ const trim = (value, charlist) => trimLeft(trimRight(value, charlist));
 
 const main = async () => {
     let branch = process.env.INPUT_BRANCH;
-    const repository = trim(process.env.INPUT_REPOSITORY);
+    const repository = trim(process.env.INPUT_REPOSITORY || process.env.GITHUB_REPOSITORY);
     if (!branch) {
         const headers = {
             'User-Agent': 'github.com/ad-m/github-push-action'
         };
-        if (process.env.GITHUB_TOKEN) headers.Authorization = `token ${process.env.GITHUB_TOKEN}`;
+        if (process.env.INPUT_GITHUB_TOKEN) headers.Authorization = `token ${process.env.INPUT_GITHUB_TOKEN}`;
         const body = JSON.parse(await get(`https://api.github.com/repos/${repository}`, { headers }))
         branch = body.default_branch;
     }
